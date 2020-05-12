@@ -6,8 +6,6 @@ This library replaces android-sqlite-asset-helper for use in one specialised sce
 
 E.g. an app might use a catalogue of data that is updated occaisionally. This data is opened read-only on the device and hence can be updated any time simply by copying over a new database.
 
-Originally I was using https://github.com/jgilfelt/android-sqlite-asset-helper but this is no longer maintained and I've had errors using the various forks with recent Android versions. So, for my very specific read-only scenario, I've adapted my similar eggheadgames/android-realm-asset-helper.
-
 ## Example
 
  * create an asset `mydatabase_1.db` in your Android assets
@@ -36,6 +34,12 @@ dependencies {
     compile 'com.github.eggheadgames:android-sqlite-ro-asset--helper:2.0.0'
 }
 ```
+
+## Alternatives
+
+Originally I was using https://github.com/jgilfelt/android-sqlite-asset-helper but this is no longer maintained and I've had errors using the various forks with recent Android versions. So, for my very specific read-only scenario, I've adapted my similar eggheadgames/android-realm-asset-helper.
+
+Android Room provides a mechanism for this. Here is a guide: https://medium.com/androiddevelopers/packing-the-room-pre-populate-your-database-with-this-one-method-333ae190e680
 
 ## Explanation
 
