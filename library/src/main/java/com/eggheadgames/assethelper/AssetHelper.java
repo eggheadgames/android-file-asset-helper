@@ -62,32 +62,22 @@ public class AssetHelper {
         Integer currentDbVersion = mOsUtil.getCurrentDbVersion(mContext, databaseName);
         int assetsDbVersion = mOsUtil.getAssetsDbVersion(mContext, databaseFolder, databaseName);
 
-        //fresh install
-        if (currentDbVersion == null) {
+        boolean isVersionAvailable = currentDbVersion == null || assetsDbVersion > currentDbVersion;
+        if (isVersionAvailable) {
             String path = mOsUtil.loadDatabaseToLocalStorage(mContext, databaseFolder, databaseName, destinationFilePath);
             if (mOsUtil.isEmpty(path)) {
                 throw new RuntimeException("Can't find copied file");
             }
             mOsUtil.storeDatabaseVersion(mContext, assetsDbVersion, databaseName);
             if (listener != null) {
-                listener.onLoadedToStorage(path, AssetHelperStatus.INSTALLED);
+
+                AssetHelperStatus status = currentDbVersion == null ? AssetHelperStatus.INSTALLED : AssetHelperStatus.UPDATED;
+                listener.onLoadedToStorage(path, status);
             }
         } else {
-            //update required
-            if (assetsDbVersion > currentDbVersion) {
-                String path = mOsUtil.loadDatabaseToLocalStorage(mContext, databaseFolder, databaseName, destinationFilePath);
-                if (mOsUtil.isEmpty(path)) {
-                    throw new RuntimeException("Can't find copied file");
-                }
-                mOsUtil.storeDatabaseVersion(mContext, assetsDbVersion, databaseName);
-                if (listener != null) {
-                    listener.onLoadedToStorage(path, AssetHelperStatus.UPDATED);
-                }
-            } else {
-                //do not update
-                if (listener != null) {
-                    listener.onLoadedToStorage(destinationFilePath, AssetHelperStatus.IGNORED);
-                }
+            //do not update
+            if (listener != null) {
+                listener.onLoadedToStorage(destinationFilePath, AssetHelperStatus.IGNORED);
             }
         }
     }
