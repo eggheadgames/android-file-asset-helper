@@ -1,4 +1,4 @@
-package com.eggheadgames.realmassethelper;
+package com.eggheadgames.assethelper;
 
 import android.content.Context;
 import android.preference.PreferenceManager;

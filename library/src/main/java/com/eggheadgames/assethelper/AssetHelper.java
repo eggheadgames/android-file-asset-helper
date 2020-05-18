@@ -1,25 +1,25 @@
-package com.eggheadgames.realmassethelper;
+package com.eggheadgames.assethelper;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 
-public class RealmAssetHelper {
+public class AssetHelper {
     @SuppressLint("StaticFieldLeak")
-    protected static final RealmAssetHelper instance = new RealmAssetHelper();
+    protected static final AssetHelper instance = new AssetHelper();
     protected Context mContext;
     protected OsUtil mOsUtil;
 
     /**
      * Please consider using Application Context as a @param context
      */
-    public static RealmAssetHelper getInstance(Context context) {
+    public static AssetHelper getInstance(Context context) {
         Context applicationContext = context.getApplicationContext();
         instance.mContext = applicationContext == null ? context : applicationContext;
         instance.mOsUtil = new OsUtil();
         return instance;
     }
 
-    protected RealmAssetHelper() {
+    protected AssetHelper() {
     }
 
     /**
@@ -38,7 +38,7 @@ public class RealmAssetHelper {
      *                          or assets with specified name not found,
      *                          or file was not written to the filesystem
      */
-    public void loadDatabaseToStorage(String databaseFolder, String databaseName, IRealmAssetHelperStorageListener listener) throws RuntimeException {
+    public void loadDatabaseToStorage(String databaseFolder, String databaseName, IAssetHelperStorageListener listener) throws RuntimeException {
         mOsUtil.clearCache();
 
         if (mOsUtil.isEmpty(databaseName)) {
@@ -60,7 +60,7 @@ public class RealmAssetHelper {
             }
             mOsUtil.storeDatabaseVersion(mContext, assetsDbVersion, databaseName);
             if (listener != null) {
-                listener.onLoadedToStorage(path, RealmAssetHelperStatus.INSTALLED);
+                listener.onLoadedToStorage(path, AssetHelperStatus.INSTALLED);
             }
         } else {
             //update required
@@ -71,7 +71,7 @@ public class RealmAssetHelper {
                 }
                 mOsUtil.storeDatabaseVersion(mContext, assetsDbVersion, databaseName);
                 if (listener != null) {
-                    listener.onLoadedToStorage(path, RealmAssetHelperStatus.UPDATED);
+                    listener.onLoadedToStorage(path, AssetHelperStatus.UPDATED);
                 }
                 //do not update
             } else {
@@ -81,7 +81,7 @@ public class RealmAssetHelper {
                     throw new RuntimeException("Can't find copied file");
                 }
                 if (listener != null) {
-                    listener.onLoadedToStorage(path, RealmAssetHelperStatus.IGNORED);
+                    listener.onLoadedToStorage(path, AssetHelperStatus.IGNORED);
                 }
             }
         }

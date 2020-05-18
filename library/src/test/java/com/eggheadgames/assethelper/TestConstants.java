@@ -1,4 +1,4 @@
-package com.eggheadgames.realmassethelper;
+package com.eggheadgames.assethelper;
 
 interface TestConstants {
 
