@@ -2,6 +2,10 @@ package com.eggheadgames.assethelper;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
+
+import java.io.File;
 
 public class AssetHelper {
     @SuppressLint("StaticFieldLeak")
@@ -24,6 +28,56 @@ public class AssetHelper {
 
     /**
      * Loads an asset to the file system.
+     * This method does process in the UI thread. Try to call it from the background thread or use {@link #copyFileToStorageAsync}
+     *
+     * @param databaseFolder name of folder where database is located
+     * @param databaseName   a database name without version and file extension.
+     *                       e.g. if you have an asset file data/testdatabase_15.sqlite
+     *                       then you should specify testdatabase as a databaseName
+     * @return AssetHelperStatus
+     * @throws RuntimeException in case if specified databaseName is empty,
+     *                          or assets with specified name not found,
+     *                          or file was not written to the filesystem
+     */
+    public AssetHelperStatus copyIfNew(String databaseFolder, String databaseName) throws RuntimeException {
+        return loadDatabaseToStorage(databaseFolder, databaseName).getStatus();
+    }
+
+    /**
+     * Loads an asset to the file system.
+     * Path to the file will be returned via a callback
+     * <p>
+     * P.S. The file will be stored by the following path:
+     * context.getFilesDir() + File.separator + databaseName + ".yyy"
+     *
+     * @param fileName   a database name without version and file extension.
+     *                   e.g. if you have an asset file data/testdatabase_15.sqlite
+     *                   then you should specify testdatabase as a databaseName
+     * @param fileFolder name of folder where database is located
+     * @param listener   will notify about the status and return an instance of Realm database if there is no error
+     * @throws RuntimeException in case if specified databaseName is empty,
+     *                          or assets with specified name not found,
+     *                          or file was not written to the filesystem
+     */
+    private void copyFileToStorageAsync(final String fileFolder, final String fileName,
+                                        final IAssetHelperStorageListener listener) throws RuntimeException {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final LoadFileToStorageResult result = loadDatabaseToStorage(fileFolder, fileName);
+
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        listener.onLoadedToStorage(result.getName(), result.getStatus());
+                    }
+                });
+            }
+        }).start();
+    }
+
+    /**
+     * Loads an asset to the file system.
      * Path to the file will be returned via a callback
      * <p>
      * P.S. The file will be stored by the following path:
@@ -33,12 +87,11 @@ public class AssetHelper {
      *                       e.g. if you have an asset file data/testdatabase_15.sqlite
      *                       then you should specify testdatabase as a databaseName
      * @param databaseFolder name of folder where database is located
-     * @param listener       will notify about the status and return an instance of Realm database if there is no error
      * @throws RuntimeException in case if specified databaseName is empty,
      *                          or assets with specified name not found,
      *                          or file was not written to the filesystem
      */
-    public void loadDatabaseToStorage(String databaseFolder, String databaseName, IAssetHelperStorageListener listener) throws RuntimeException {
+    private LoadFileToStorageResult loadDatabaseToStorage(String databaseFolder, String databaseName) throws RuntimeException {
         mOsUtil.clearCache();
 
         if (mOsUtil.isEmpty(databaseName)) {
@@ -64,21 +117,16 @@ public class AssetHelper {
 
         boolean isVersionAvailable = currentDbVersion == null || assetsDbVersion > currentDbVersion;
         if (isVersionAvailable) {
-            String path = mOsUtil.loadDatabaseToLocalStorage(mContext, databaseFolder, databaseName, destinationFilePath);
-            if (mOsUtil.isEmpty(path)) {
+            String fileName = mOsUtil.loadDatabaseToLocalStorage(mContext, databaseFolder, databaseName, destinationFilePath);
+            if (mOsUtil.isEmpty(fileName)) {
                 throw new RuntimeException("Can't find copied file");
             }
             mOsUtil.storeDatabaseVersion(mContext, assetsDbVersion, databaseName);
-            if (listener != null) {
-
-                AssetHelperStatus status = currentDbVersion == null ? AssetHelperStatus.INSTALLED : AssetHelperStatus.UPDATED;
-                listener.onLoadedToStorage(path, status);
-            }
+            return new LoadFileToStorageResult(fileName, currentDbVersion == null ? AssetHelperStatus.INSTALLED : AssetHelperStatus.UPDATED);
         } else {
             //do not update
-            if (listener != null) {
-                listener.onLoadedToStorage(destinationFilePath, AssetHelperStatus.IGNORED);
-            }
+            String name = new File(destinationFilePath).getName();
+            return new LoadFileToStorageResult(name, AssetHelperStatus.IGNORED);
         }
     }
 }
