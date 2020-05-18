@@ -27,10 +27,10 @@ public class AssetHelper {
      * Path to the file will be returned via a callback
      * <p>
      * P.S. The file will be stored by the following path:
-     * context.getFilesDir() + File.separator + databaseName + ".realm"
+     * context.getFilesDir() + File.separator + databaseName + ".yyy"
      *
      * @param databaseName   a database name without version and file extension.
-     *                       e.g. if you have an asset file data/testdatabase_15.realm
+     *                       e.g. if you have an asset file data/testdatabase_15.sqlite
      *                       then you should specify testdatabase as a databaseName
      * @param databaseFolder name of folder where database is located
      * @param listener       will notify about the status and return an instance of Realm database if there is no error
@@ -49,12 +49,22 @@ public class AssetHelper {
             throw new RuntimeException("An asset for requested database doesn't exist");
         }
 
+        String extension = mOsUtil.getAssetFileExtension(mContext, databaseFolder, databaseName);
+        if (mOsUtil.isEmpty(extension)) {
+            throw new RuntimeException("Extension for the " + databaseName + " is empty");
+        }
+
+        String destinationFilePath = mOsUtil.generateFilePath(mContext, databaseName, extension);
+        if (mOsUtil.isEmpty(destinationFilePath)) {
+            throw new RuntimeException("Can't generate destination file path");
+        }
+
         Integer currentDbVersion = mOsUtil.getCurrentDbVersion(mContext, databaseName);
         int assetsDbVersion = mOsUtil.getAssetsDbVersion(mContext, databaseFolder, databaseName);
 
         //fresh install
         if (currentDbVersion == null) {
-            String path = mOsUtil.loadDatabaseToLocalStorage(mContext, databaseFolder, databaseName);
+            String path = mOsUtil.loadDatabaseToLocalStorage(mContext, databaseFolder, databaseName, destinationFilePath);
             if (mOsUtil.isEmpty(path)) {
                 throw new RuntimeException("Can't find copied file");
             }
@@ -65,7 +75,7 @@ public class AssetHelper {
         } else {
             //update required
             if (assetsDbVersion > currentDbVersion) {
-                String path = mOsUtil.loadDatabaseToLocalStorage(mContext, databaseFolder, databaseName);
+                String path = mOsUtil.loadDatabaseToLocalStorage(mContext, databaseFolder, databaseName, destinationFilePath);
                 if (mOsUtil.isEmpty(path)) {
                     throw new RuntimeException("Can't find copied file");
                 }
@@ -73,15 +83,10 @@ public class AssetHelper {
                 if (listener != null) {
                     listener.onLoadedToStorage(path, AssetHelperStatus.UPDATED);
                 }
-                //do not update
             } else {
-
-                String path = mOsUtil.getFileNameForDatabase(mContext, databaseName);
-                if (mOsUtil.isEmpty(path)) {
-                    throw new RuntimeException("Can't find copied file");
-                }
+                //do not update
                 if (listener != null) {
-                    listener.onLoadedToStorage(path, AssetHelperStatus.IGNORED);
+                    listener.onLoadedToStorage(destinationFilePath, AssetHelperStatus.IGNORED);
                 }
             }
         }

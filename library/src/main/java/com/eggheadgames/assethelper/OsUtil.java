@@ -13,13 +13,13 @@ import java.util.regex.Pattern;
 
 public class OsUtil {
 
-    private static final String VERSION_PATTERN = "_\\d+\\.realm";
+    private static final String VERSION_PATTERN = "_\\d+\\.+";
     private String cachedAssetPath;
 
-    public String loadDatabaseToLocalStorage(Context context, String databaseFolder, String databaseName) {
+    public String loadDatabaseToLocalStorage(Context context, String databaseFolder, String databaseName, String destinationFilePath) {
         String asset = findAsset(context, databaseFolder, databaseName);
 
-        File file = new File(generateDatabaseFileName(context, databaseName));
+        File file = new File(destinationFilePath);
         if (file.exists()) {
             boolean delete = file.delete();
             if (!delete) {
@@ -30,12 +30,12 @@ public class OsUtil {
             InputStream is = context.getAssets().open(asset);
             byte[] buffer = new byte[1024];
             FileOutputStream fos = new FileOutputStream(file);
-            
+
             int length = 0;
             while ((length = is.read(buffer)) >= 0) {
                 fos.write(buffer, 0, length);
-            } 
-            
+            }
+
             is.close();
             fos.close();
         } catch (Exception e) {
@@ -45,12 +45,8 @@ public class OsUtil {
         return file.getName();
     }
 
-    public String generateDatabaseFileName(Context context, String databaseName) {
-        return context.getFilesDir() + File.separator + databaseName + ".realm";
-    }
-
-    public String getFileNameForDatabase(Context context, String databaseName) {
-        return new File(generateDatabaseFileName(context, databaseName)).getName();
+    public String generateFilePath(Context context, String databaseName, String extension) {
+        return context.getFilesDir() + File.separator + databaseName + "." + extension;
     }
 
     public Integer getCurrentDbVersion(Context context, String databaseName) {
@@ -79,10 +75,21 @@ public class OsUtil {
     }
 
     /**
-     * expected asset name <databaseName>_xx.realm or <databaseName>.realm
+     * expected asset name <databaseName>_xx.yyy or <databaseName>.yyy
      */
     public boolean isDatabaseAssetExists(Context context, String databaseFolder, String databaseName) {
         return !TextUtils.isEmpty(findAsset(context, databaseFolder, databaseName));
+    }
+
+    public String getAssetFileExtension(Context context, String databaseFolder, String databaseName) {
+        String assetFilePath = findAsset(context, databaseFolder, databaseName);
+        if (assetFilePath != null) {
+            int beginIndex = assetFilePath.lastIndexOf(".");
+            if (beginIndex != -1) {
+                return assetFilePath.substring(beginIndex + 1);
+            }
+        }
+        return null;
     }
 
     public void clearCache() {
@@ -99,7 +106,7 @@ public class OsUtil {
                 if (list.length > 0) {
                     for (String file : list) {
                         if (!TextUtils.isEmpty(file) &&
-                                (file.matches(databaseName + VERSION_PATTERN) || file.matches(databaseName + ".realm"))) {
+                                (file.matches(databaseName + VERSION_PATTERN) || file.matches(databaseName + "."))) {
                             cachedAssetPath = path + File.separator + file;
                             return path;
                         }

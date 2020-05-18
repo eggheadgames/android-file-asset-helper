@@ -40,9 +40,11 @@ public class AssetHelperTest {
         });
         Mockito.when(osUtil.isDatabaseAssetExists(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString())).thenReturn(true);
 
-        Mockito.when(osUtil.loadDatabaseToLocalStorage(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString())).thenReturn(TestConstants.FILE_PATH);
+        Mockito.when(osUtil.loadDatabaseToLocalStorage(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString(), Mockito.anyString())).thenReturn(TestConstants.FILE_PATH);
 
-        Mockito.when(osUtil.getFileNameForDatabase(Mockito.any(Context.class), Mockito.anyString())).thenReturn(TestConstants.FILE_PATH);
+        Mockito.when(osUtil.generateFilePath(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString())).thenReturn(TestConstants.FILE_PATH);
+
+        Mockito.when(osUtil.getAssetFileExtension(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString())).thenReturn(TestConstants.FILE_EXTENSION);
 
         assetHelper.mOsUtil = osUtil;
     }
@@ -85,7 +87,7 @@ public class AssetHelperTest {
 
         assetHelper.loadDatabaseToStorage(TestConstants.DB_FOLDER, TestConstants.DB_NAME, null);
 
-        Mockito.verify(osUtil, Mockito.times(1)).loadDatabaseToLocalStorage(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString());
+        Mockito.verify(osUtil, Mockito.times(1)).loadDatabaseToLocalStorage(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
     }
 
     @Test
@@ -95,7 +97,7 @@ public class AssetHelperTest {
 
         assetHelper.loadDatabaseToStorage(TestConstants.DB_FOLDER, TestConstants.DB_NAME, null);
 
-        Mockito.verify(osUtil, Mockito.times(1)).loadDatabaseToLocalStorage(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString());
+        Mockito.verify(osUtil, Mockito.times(1)).loadDatabaseToLocalStorage(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
     }
 
     @Test
@@ -104,7 +106,7 @@ public class AssetHelperTest {
         Mockito.when(osUtil.getAssetsDbVersion(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString())).thenReturn(2);
 
         assetHelper.loadDatabaseToStorage(TestConstants.DB_FOLDER, TestConstants.DB_NAME, null);
-        Mockito.verify(osUtil, Mockito.never()).loadDatabaseToLocalStorage(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString());
+        Mockito.verify(osUtil, Mockito.never()).loadDatabaseToLocalStorage(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
     }
 
     @Test
@@ -153,7 +155,7 @@ public class AssetHelperTest {
         Mockito.when(osUtil.getCurrentDbVersion(Mockito.any(Context.class), Mockito.anyString())).thenReturn(1);
         Mockito.when(osUtil.getAssetsDbVersion(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString())).thenReturn(2);
 
-        when(osUtil.loadDatabaseToLocalStorage(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString())).thenReturn(null);
+        when(osUtil.loadDatabaseToLocalStorage(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString(), Mockito.anyString())).thenReturn(null);
         assetHelper.loadDatabaseToStorage(TestConstants.DB_FOLDER, TestConstants.DB_NAME, null);
     }
 }
