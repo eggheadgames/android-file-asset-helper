@@ -114,8 +114,8 @@ public class AssetHelperTest {
     public void onFreshAppInstall_relevantCallbackShouldBeTriggered() {
         Mockito.when(osUtil.getCurrentDbVersion(Mockito.any(Context.class), Mockito.anyString())).thenReturn(null);
 
-        AssetHelperStatus status = assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME);
-        Assert.assertEquals(AssetHelperStatus.INSTALLED, status);
+        CopyFileToStorageResult result = assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME);
+        Assert.assertEquals(AssetHelperStatus.INSTALLED, result.getStatus());
     }
 
     @Test
@@ -123,8 +123,8 @@ public class AssetHelperTest {
         Mockito.when(osUtil.getCurrentDbVersion(Mockito.any(Context.class), Mockito.anyString())).thenReturn(1);
         Mockito.when(osUtil.getAssetsDbVersion(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString())).thenReturn(2);
 
-        AssetHelperStatus status = assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME);
-        Assert.assertEquals(AssetHelperStatus.UPDATED, status);
+        CopyFileToStorageResult result = assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME);
+        Assert.assertEquals(AssetHelperStatus.UPDATED, result.getStatus());
     }
 
     @Test
@@ -132,8 +132,8 @@ public class AssetHelperTest {
         Mockito.when(osUtil.getCurrentDbVersion(Mockito.any(Context.class), Mockito.anyString())).thenReturn(2);
         Mockito.when(osUtil.getAssetsDbVersion(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString())).thenReturn(2);
 
-        AssetHelperStatus status = assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME);
-        Assert.assertEquals(AssetHelperStatus.IGNORED, status);
+        CopyFileToStorageResult result = assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME);
+        Assert.assertEquals(AssetHelperStatus.IGNORED, result.getStatus());
     }
 
     @Test

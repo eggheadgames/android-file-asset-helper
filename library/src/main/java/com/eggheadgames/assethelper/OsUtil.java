@@ -42,7 +42,7 @@ public class OsUtil {
             throw new RuntimeException(e);
         }
 
-        return file.getName();
+        return destinationFilePath;
     }
 
     public String generateFilePath(Context context, String fileName, String extension) {
