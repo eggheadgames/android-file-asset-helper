@@ -59,7 +59,7 @@ public class AssetHelper {
      *                          or assets with specified name not found,
      *                          or file was not written to the filesystem
      */
-    private void copyFileToStorageAsync(final String fileFolder, final String fileName,
+    public void copyFileToStorageAsync(final String fileFolder, final String fileName,
                                         final IAssetHelperStorageListener listener) throws RuntimeException {
         new Thread(new Runnable() {
             @Override
