@@ -57,56 +57,56 @@ public class AssetHelperTest {
 
     @Test(expected = RuntimeException.class)
     public void onMissingDbAsset_shouldThrowRuntimeException() throws RuntimeException {
-        Mockito.when(osUtil.isDatabaseAssetExists(context, TestConstants.DB_FOLDER, TestConstants.DB_NAME)).thenReturn(false);
+        Mockito.when(osUtil.isDatabaseAssetExists(context, TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME)).thenReturn(false);
 
-        assetHelper.copyIfNew(TestConstants.DB_FOLDER, TestConstants.DB_NAME);
+        assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME);
     }
 
     @Test
-    public void onFreshInstall_databaseVersionShouldBeStored() {
+    public void onFreshInstall_fileVersionShouldBeStored() {
         Mockito.when(osUtil.getCurrentDbVersion(Mockito.any(Context.class), Mockito.anyString())).thenReturn(null);
         Mockito.when(osUtil.getAssetsDbVersion(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString())).thenReturn(2);
 
-        assetHelper.copyIfNew(TestConstants.DB_FOLDER, TestConstants.DB_NAME);
+        assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME);
 
-        Mockito.verify(osUtil, Mockito.times(1)).storeDatabaseVersion(context, 2, TestConstants.DB_NAME);
+        Mockito.verify(osUtil, Mockito.times(1)).storeDatabaseVersion(context, 2, TestConstants.FILE_NAME);
     }
 
     @Test
-    public void onDatabaseUpdate_databaseVersionShouldBeStored() {
+    public void onDatabaseUpdate_fileVersionShouldBeStored() {
         Mockito.when(osUtil.getCurrentDbVersion(Mockito.any(Context.class), Mockito.anyString())).thenReturn(1);
         Mockito.when(osUtil.getAssetsDbVersion(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString())).thenReturn(2);
 
-        assetHelper.copyIfNew(TestConstants.DB_FOLDER, TestConstants.DB_NAME);
+        assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME);
 
-        Mockito.verify(osUtil, Mockito.times(1)).storeDatabaseVersion(context, 2, TestConstants.DB_NAME);
+        Mockito.verify(osUtil, Mockito.times(1)).storeDatabaseVersion(context, 2, TestConstants.FILE_NAME);
     }
 
     @Test
-    public void onFreshAppInstall_databaseShouldBeLoadedToInternalStorage() {
+    public void onFreshAppInstall_fileShouldBeLoadedToInternalStorage() {
         Mockito.when(osUtil.getCurrentDbVersion(Mockito.any(Context.class), Mockito.anyString())).thenReturn(null);
 
-        assetHelper.copyIfNew(TestConstants.DB_FOLDER, TestConstants.DB_NAME);
+        assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME);
 
         Mockito.verify(osUtil, Mockito.times(1)).loadDatabaseToLocalStorage(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
     }
 
     @Test
-    public void onDatabaseUpdate_databaseShouldBeLoadedToInternalStorage() {
+    public void onDatabaseUpdate_fileShouldBeLoadedToInternalStorage() {
         Mockito.when(osUtil.getCurrentDbVersion(Mockito.any(Context.class), Mockito.anyString())).thenReturn(1);
         Mockito.when(osUtil.getAssetsDbVersion(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString())).thenReturn(2);
 
-        assetHelper.copyIfNew(TestConstants.DB_FOLDER, TestConstants.DB_NAME);
+        assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME);
 
         Mockito.verify(osUtil, Mockito.times(1)).loadDatabaseToLocalStorage(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
     }
 
     @Test
-    public void onSameDatabaseVersionArrived_databaseShouldNotBeLoadedToInternalStorage() {
+    public void onSameDatabaseVersionArrived_fileShouldNotBeLoadedToInternalStorage() {
         Mockito.when(osUtil.getCurrentDbVersion(Mockito.any(Context.class), Mockito.anyString())).thenReturn(2);
         Mockito.when(osUtil.getAssetsDbVersion(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString())).thenReturn(2);
 
-        assetHelper.copyIfNew(TestConstants.DB_FOLDER, TestConstants.DB_NAME);
+        assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME);
         Mockito.verify(osUtil, Mockito.never()).loadDatabaseToLocalStorage(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
     }
 
@@ -114,7 +114,7 @@ public class AssetHelperTest {
     public void onFreshAppInstall_relevantCallbackShouldBeTriggered() {
         Mockito.when(osUtil.getCurrentDbVersion(Mockito.any(Context.class), Mockito.anyString())).thenReturn(null);
 
-        AssetHelperStatus status = assetHelper.copyIfNew(TestConstants.DB_FOLDER, TestConstants.DB_NAME);
+        AssetHelperStatus status = assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME);
         Assert.assertEquals(AssetHelperStatus.INSTALLED, status);
     }
 
@@ -123,7 +123,7 @@ public class AssetHelperTest {
         Mockito.when(osUtil.getCurrentDbVersion(Mockito.any(Context.class), Mockito.anyString())).thenReturn(1);
         Mockito.when(osUtil.getAssetsDbVersion(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString())).thenReturn(2);
 
-        AssetHelperStatus status = assetHelper.copyIfNew(TestConstants.DB_FOLDER, TestConstants.DB_NAME);
+        AssetHelperStatus status = assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME);
         Assert.assertEquals(AssetHelperStatus.UPDATED, status);
     }
 
@@ -132,7 +132,7 @@ public class AssetHelperTest {
         Mockito.when(osUtil.getCurrentDbVersion(Mockito.any(Context.class), Mockito.anyString())).thenReturn(2);
         Mockito.when(osUtil.getAssetsDbVersion(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString())).thenReturn(2);
 
-        AssetHelperStatus status = assetHelper.copyIfNew(TestConstants.DB_FOLDER, TestConstants.DB_NAME);
+        AssetHelperStatus status = assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME);
         Assert.assertEquals(AssetHelperStatus.IGNORED, status);
     }
 
@@ -142,8 +142,8 @@ public class AssetHelperTest {
         Mockito.when(osUtil.getCurrentDbVersion(Mockito.any(Context.class), Mockito.anyString())).thenReturn(1);
         Mockito.when(osUtil.getAssetsDbVersion(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString())).thenReturn(2);
 
-        assetHelper.copyIfNew(TestConstants.DB_FOLDER, TestConstants.DB_NAME);
-        Mockito.verify(osUtil, Mockito.times(1)).storeDatabaseVersion(context, 2, TestConstants.DB_NAME);
+        assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME);
+        Mockito.verify(osUtil, Mockito.times(1)).storeDatabaseVersion(context, 2, TestConstants.FILE_NAME);
     }
 
     @Test(expected = RuntimeException.class)
@@ -152,6 +152,6 @@ public class AssetHelperTest {
         Mockito.when(osUtil.getAssetsDbVersion(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString())).thenReturn(2);
 
         when(osUtil.loadDatabaseToLocalStorage(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString(), Mockito.anyString())).thenReturn(null);
-        assetHelper.copyIfNew(TestConstants.DB_FOLDER, TestConstants.DB_NAME);
+        assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME);
     }
 }

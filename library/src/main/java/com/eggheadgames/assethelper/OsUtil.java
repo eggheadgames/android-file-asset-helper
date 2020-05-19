@@ -16,14 +16,14 @@ public class OsUtil {
     private static final String VERSION_PATTERN = "_\\d+\\.+";
     private String cachedAssetPath;
 
-    public String loadDatabaseToLocalStorage(Context context, String databaseFolder, String databaseName, String destinationFilePath) {
-        String asset = findAsset(context, databaseFolder, databaseName);
+    public String loadDatabaseToLocalStorage(Context context, String assetFolder, String fileName, String destinationFilePath) {
+        String asset = findAsset(context, assetFolder, fileName);
 
         File file = new File(destinationFilePath);
         if (file.exists()) {
             boolean delete = file.delete();
             if (!delete) {
-                throw new RuntimeException("Can not remove old database");
+                throw new RuntimeException("Can not remove old file");
             }
         }
         try {
@@ -45,17 +45,17 @@ public class OsUtil {
         return file.getName();
     }
 
-    public String generateFilePath(Context context, String databaseName, String extension) {
-        return context.getFilesDir() + File.separator + databaseName + "." + extension;
+    public String generateFilePath(Context context, String fileName, String extension) {
+        return context.getFilesDir() + File.separator + fileName + "." + extension;
     }
 
-    public Integer getCurrentDbVersion(Context context, String databaseName) {
-        int currentVersion = PreferenceManager.getDefaultSharedPreferences(context).getInt(Constants.PREFERENCES_DB_VERSION + databaseName, -1);
+    public Integer getCurrentDbVersion(Context context, String fileName) {
+        int currentVersion = PreferenceManager.getDefaultSharedPreferences(context).getInt(Constants.PREFERENCES_FILE_VERSION + fileName, -1);
         return currentVersion == -1 ? null : currentVersion;
     }
 
-    public int getAssetsDbVersion(Context context, String databaseFolder, String databaseName) {
-        String dbAsset = findAsset(context, databaseFolder, databaseName);
+    public int getAssetsDbVersion(Context context, String assetFolder, String fileName) {
+        String dbAsset = findAsset(context, assetFolder, fileName);
         Pattern pattern = Pattern.compile(VERSION_PATTERN);
         Matcher matcher = pattern.matcher(dbAsset);
 
@@ -66,8 +66,8 @@ public class OsUtil {
         return 0;
     }
 
-    public void storeDatabaseVersion(Context context, int version, String databaseName) {
-        PreferenceManager.getDefaultSharedPreferences(context).edit().putInt(Constants.PREFERENCES_DB_VERSION + databaseName, version).apply();
+    public void storeDatabaseVersion(Context context, int version, String fileName) {
+        PreferenceManager.getDefaultSharedPreferences(context).edit().putInt(Constants.PREFERENCES_FILE_VERSION + fileName, version).apply();
     }
 
     public boolean isEmpty(String string) {
@@ -75,14 +75,14 @@ public class OsUtil {
     }
 
     /**
-     * expected asset name <databaseName>_xx.yyy or <databaseName>.yyy
+     * expected asset name <fileName>_xx.yyy or <fileName>.yyy
      */
-    public boolean isDatabaseAssetExists(Context context, String databaseFolder, String databaseName) {
-        return !TextUtils.isEmpty(findAsset(context, databaseFolder, databaseName));
+    public boolean isDatabaseAssetExists(Context context, String assetFolder, String fileName) {
+        return !TextUtils.isEmpty(findAsset(context, assetFolder, fileName));
     }
 
-    public String getAssetFileExtension(Context context, String databaseFolder, String databaseName) {
-        String assetFilePath = findAsset(context, databaseFolder, databaseName);
+    public String getAssetFileExtension(Context context, String assetFolder, String fileName) {
+        String assetFilePath = findAsset(context, assetFolder, fileName);
         if (assetFilePath != null) {
             int beginIndex = assetFilePath.lastIndexOf(".");
             if (beginIndex != -1) {
@@ -96,7 +96,7 @@ public class OsUtil {
         cachedAssetPath = null;
     }
 
-    private String findAsset(Context context, String path, String databaseName) {
+    private String findAsset(Context context, String path, String fileName) {
         if (!TextUtils.isEmpty(cachedAssetPath)) {
             return cachedAssetPath;
         } else {
@@ -106,7 +106,7 @@ public class OsUtil {
                 if (list.length > 0) {
                     for (String file : list) {
                         if (!TextUtils.isEmpty(file) &&
-                                (file.matches(databaseName + VERSION_PATTERN) || file.matches(databaseName + "."))) {
+                                (file.matches(fileName + VERSION_PATTERN) || file.matches(fileName + "."))) {
                             cachedAssetPath = path + File.separator + file;
                             return path;
                         }

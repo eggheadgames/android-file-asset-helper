@@ -30,17 +30,17 @@ public class AssetHelper {
      * Loads an asset to the file system.
      * This method does process in the UI thread. Try to call it from the background thread or use {@link #copyFileToStorageAsync}
      *
-     * @param databaseFolder name of folder where database is located
-     * @param databaseName   a database name without version and file extension.
+     * @param assetFolder name of folder where file is located
+     * @param fileName   a file name without version and file extension.
      *                       e.g. if you have an asset file data/testdatabase_15.sqlite
-     *                       then you should specify testdatabase as a databaseName
+     *                       then you should specify testdatabase as a fileName
      * @return AssetHelperStatus
-     * @throws RuntimeException in case if specified databaseName is empty,
+     * @throws RuntimeException in case if specified fileName is empty,
      *                          or assets with specified name not found,
      *                          or file was not written to the filesystem
      */
-    public AssetHelperStatus copyIfNew(String databaseFolder, String databaseName) throws RuntimeException {
-        return loadDatabaseToStorage(databaseFolder, databaseName).getStatus();
+    public AssetHelperStatus copyIfNew(String assetFolder, String fileName) throws RuntimeException {
+        return loadDatabaseToStorage(assetFolder, fileName).getStatus();
     }
 
     /**
@@ -48,14 +48,14 @@ public class AssetHelper {
      * Path to the file will be returned via a callback
      * <p>
      * P.S. The file will be stored by the following path:
-     * context.getFilesDir() + File.separator + databaseName + ".yyy"
+     * context.getFilesDir() + File.separator + fileName + ".yyy"
      *
-     * @param fileName   a database name without version and file extension.
+     * @param fileName   a file name without version and file extension.
      *                   e.g. if you have an asset file data/testdatabase_15.sqlite
-     *                   then you should specify testdatabase as a databaseName
-     * @param fileFolder name of folder where database is located
-     * @param listener   will notify about the status and return an instance of Realm database if there is no error
-     * @throws RuntimeException in case if specified databaseName is empty,
+     *                   then you should specify testdatabase as a fileName
+     * @param fileFolder name of folder where file is located
+     * @param listener   will notify about the status
+     * @throws RuntimeException in case if specified fileName is empty,
      *                          or assets with specified name not found,
      *                          or file was not written to the filesystem
      */
@@ -81,48 +81,48 @@ public class AssetHelper {
      * Path to the file will be returned via a callback
      * <p>
      * P.S. The file will be stored by the following path:
-     * context.getFilesDir() + File.separator + databaseName + ".yyy"
+     * context.getFilesDir() + File.separator + fileName + ".yyy"
      *
-     * @param databaseName   a database name without version and file extension.
+     * @param fileName   a file name without version and file extension.
      *                       e.g. if you have an asset file data/testdatabase_15.sqlite
-     *                       then you should specify testdatabase as a databaseName
-     * @param databaseFolder name of folder where database is located
-     * @throws RuntimeException in case if specified databaseName is empty,
+     *                       then you should specify testdatabase as a fileName
+     * @param assetFolder name of folder where file is located
+     * @throws RuntimeException in case if specified fileName is empty,
      *                          or assets with specified name not found,
      *                          or file was not written to the filesystem
      */
-    private LoadFileToStorageResult loadDatabaseToStorage(String databaseFolder, String databaseName) throws RuntimeException {
+    private LoadFileToStorageResult loadDatabaseToStorage(String assetFolder, String fileName) throws RuntimeException {
         mOsUtil.clearCache();
 
-        if (mOsUtil.isEmpty(databaseName)) {
-            throw new RuntimeException("The database name is empty");
+        if (mOsUtil.isEmpty(fileName)) {
+            throw new RuntimeException("The file name is empty");
         }
 
-        if (!mOsUtil.isDatabaseAssetExists(mContext, databaseFolder, databaseName)) {
-            throw new RuntimeException("An asset for requested database doesn't exist");
+        if (!mOsUtil.isDatabaseAssetExists(mContext, assetFolder, fileName)) {
+            throw new RuntimeException("An asset for requested file doesn't exist");
         }
 
-        String extension = mOsUtil.getAssetFileExtension(mContext, databaseFolder, databaseName);
+        String extension = mOsUtil.getAssetFileExtension(mContext, assetFolder, fileName);
         if (mOsUtil.isEmpty(extension)) {
-            throw new RuntimeException("Extension for the " + databaseName + " is empty");
+            throw new RuntimeException("Extension for the " + fileName + " is empty");
         }
 
-        String destinationFilePath = mOsUtil.generateFilePath(mContext, databaseName, extension);
+        String destinationFilePath = mOsUtil.generateFilePath(mContext, fileName, extension);
         if (mOsUtil.isEmpty(destinationFilePath)) {
             throw new RuntimeException("Can't generate destination file path");
         }
 
-        Integer currentDbVersion = mOsUtil.getCurrentDbVersion(mContext, databaseName);
-        int assetsDbVersion = mOsUtil.getAssetsDbVersion(mContext, databaseFolder, databaseName);
+        Integer currentDbVersion = mOsUtil.getCurrentDbVersion(mContext, fileName);
+        int assetsDbVersion = mOsUtil.getAssetsDbVersion(mContext, assetFolder, fileName);
 
         boolean isVersionAvailable = currentDbVersion == null || assetsDbVersion > currentDbVersion;
         if (isVersionAvailable) {
-            String fileName = mOsUtil.loadDatabaseToLocalStorage(mContext, databaseFolder, databaseName, destinationFilePath);
-            if (mOsUtil.isEmpty(fileName)) {
+            String name = mOsUtil.loadDatabaseToLocalStorage(mContext, assetFolder, fileName, destinationFilePath);
+            if (mOsUtil.isEmpty(name)) {
                 throw new RuntimeException("Can't find copied file");
             }
-            mOsUtil.storeDatabaseVersion(mContext, assetsDbVersion, databaseName);
-            return new LoadFileToStorageResult(fileName, currentDbVersion == null ? AssetHelperStatus.INSTALLED : AssetHelperStatus.UPDATED);
+            mOsUtil.storeDatabaseVersion(mContext, assetsDbVersion, name);
+            return new LoadFileToStorageResult(name, currentDbVersion == null ? AssetHelperStatus.INSTALLED : AssetHelperStatus.UPDATED);
         } else {
             //do not update
             String name = new File(destinationFilePath).getName();
