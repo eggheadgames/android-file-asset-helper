@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 
 public class OsUtil {
 
-    private static final String VERSION_PATTERN = "_\\d+\\.+";
+    private static final String VERSION_PATTERN = "_\\d+\\.[^\\n]+";
     private String cachedAssetPath;
 
     public String loadDatabaseToLocalStorage(Context context, String assetFolder, String fileName, String destinationFilePath) {
