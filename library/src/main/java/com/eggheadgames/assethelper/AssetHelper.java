@@ -29,9 +29,9 @@ public class AssetHelper {
      * This method does process in the UI thread. Try to call it from the background thread or use {@link #copyFileToStorageAsync}
      *
      * @param assetFolder name of folder where file is located
-     * @param fileName    a file name without version and file extension.
+     * @param fileName    a file name with version and file extension.
      *                    e.g. if you have an asset file data/testdatabase_15.sqlite
-     *                    then you should specify testdatabase as a fileName
+     *                    then you should specify testdatabase.sqlite as a fileName
      * @return LoadFileToStorageResult
      * @throws RuntimeException in case if specified fileName is empty,
      *                          or assets with specified name not found,
@@ -48,9 +48,9 @@ public class AssetHelper {
      * P.S. The file will be stored by the following path:
      * context.getFilesDir() + File.separator + fileName + ".yyy"
      *
-     * @param fileName   a file name without version and file extension.
+     * @param fileName   a file name with version and file extension.
      *                   e.g. if you have an asset file data/testdatabase_15.sqlite
-     *                   then you should specify testdatabase as a fileName
+     *                   then you should specify testdatabase.sqlite as a fileName
      * @param fileFolder name of folder where file is located
      * @param listener   will notify about the status
      * @throws RuntimeException in case if specified fileName is empty,
@@ -81,9 +81,9 @@ public class AssetHelper {
      * P.S. The file will be stored by the following path:
      * context.getFilesDir() + File.separator + fileName + ".yyy"
      *
-     * @param fileName    a file name without version and file extension.
+     * @param fileName    a file name with version and file extension.
      *                    e.g. if you have an asset file data/testdatabase_15.sqlite
-     *                    then you should specify testdatabase as a fileName
+     *                    then you should specify testdatabase.sqlite as a fileName
      * @param assetFolder name of folder where file is located
      * @throws RuntimeException in case if specified fileName is empty,
      *                          or assets with specified name not found,
@@ -96,13 +96,18 @@ public class AssetHelper {
             throw new RuntimeException("The file name is empty");
         }
 
-        if (!mOsUtil.isFileAssetExists(mContext, assetFolder, fileName)) {
-            throw new RuntimeException("An asset for requested file doesn't exist");
+        String name;
+        String extension = null;
+        int indexOfDot = fileName.lastIndexOf(".");
+        if (indexOfDot == -1) {
+            name = fileName;
+        } else {
+            name = fileName.substring(0, indexOfDot);
+            extension = fileName.substring(indexOfDot + 1);
         }
 
-        String extension = mOsUtil.getAssetFileExtension(mContext, assetFolder, fileName);
-        if (mOsUtil.isEmpty(extension)) {
-            throw new RuntimeException("Extension for the " + fileName + " is empty");
+        if (!mOsUtil.isFileAssetExists(mContext, assetFolder, name, extension)) {
+            throw new RuntimeException("An asset for requested file doesn't exist");
         }
 
         String destinationFilePath = mOsUtil.generateFilePath(mContext, fileName, extension);
@@ -111,11 +116,11 @@ public class AssetHelper {
         }
 
         Integer currentFileVersion = mOsUtil.getCurrentFileVersion(mContext, fileName);
-        int assetsFileVersion = mOsUtil.getAssetsFileVersion(mContext, assetFolder, fileName);
+        int assetsFileVersion = mOsUtil.getAssetsFileVersion(mContext, assetFolder, fileName, extension);
 
         boolean isVersionAvailable = currentFileVersion == null || assetsFileVersion > currentFileVersion;
         if (isVersionAvailable) {
-            String pathToFile = mOsUtil.loadFileToLocalStorage(mContext, assetFolder, fileName, destinationFilePath);
+            String pathToFile = mOsUtil.loadFileToLocalStorage(mContext, assetFolder, fileName, extension, destinationFilePath);
             if (mOsUtil.isEmpty(pathToFile)) {
                 throw new RuntimeException("Can't find copied file");
             }
