@@ -16,7 +16,7 @@ public class OsUtil {
     private static final String VERSION_PATTERN = "_\\d+\\.[^\\n]+";
     private String cachedAssetPath;
 
-    public String loadDatabaseToLocalStorage(Context context, String assetFolder, String fileName, String destinationFilePath) {
+    public String loadFileToLocalStorage(Context context, String assetFolder, String fileName, String destinationFilePath) {
         String asset = findAsset(context, assetFolder, fileName);
 
         File file = new File(destinationFilePath);
@@ -49,15 +49,15 @@ public class OsUtil {
         return context.getFilesDir() + File.separator + fileName + "." + extension;
     }
 
-    public Integer getCurrentDbVersion(Context context, String fileName) {
+    public Integer getCurrentFileVersion(Context context, String fileName) {
         int currentVersion = PreferenceManager.getDefaultSharedPreferences(context).getInt(Constants.PREFERENCES_FILE_VERSION + fileName, -1);
         return currentVersion == -1 ? null : currentVersion;
     }
 
-    public int getAssetsDbVersion(Context context, String assetFolder, String fileName) {
-        String dbAsset = findAsset(context, assetFolder, fileName);
+    public int getAssetsFileVersion(Context context, String assetFolder, String fileName) {
+        String fileAsset = findAsset(context, assetFolder, fileName);
         Pattern pattern = Pattern.compile(VERSION_PATTERN);
-        Matcher matcher = pattern.matcher(dbAsset);
+        Matcher matcher = pattern.matcher(fileAsset);
 
         if (matcher.find()) {
             String version = matcher.group().substring(1, matcher.group().indexOf('.'));
@@ -66,7 +66,7 @@ public class OsUtil {
         return 0;
     }
 
-    public void storeDatabaseVersion(Context context, int version, String fileName) {
+    public void storeFileVersion(Context context, int version, String fileName) {
         PreferenceManager.getDefaultSharedPreferences(context).edit().putInt(Constants.PREFERENCES_FILE_VERSION + fileName, version).apply();
     }
 
@@ -77,7 +77,7 @@ public class OsUtil {
     /**
      * expected asset name <fileName>_xx.yyy or <fileName>.yyy
      */
-    public boolean isDatabaseAssetExists(Context context, String assetFolder, String fileName) {
+    public boolean isFileAssetExists(Context context, String assetFolder, String fileName) {
         return !TextUtils.isEmpty(findAsset(context, assetFolder, fileName));
     }
 

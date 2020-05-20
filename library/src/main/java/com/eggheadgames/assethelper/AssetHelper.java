@@ -38,7 +38,7 @@ public class AssetHelper {
      *                          or file was not written to the filesystem
      */
     public CopyFileToStorageResult copyIfNew(String assetFolder, String fileName) throws RuntimeException {
-        return loadDatabaseToStorage(assetFolder, fileName);
+        return loadFileToStorage(assetFolder, fileName);
     }
 
     /**
@@ -62,7 +62,7 @@ public class AssetHelper {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                final CopyFileToStorageResult result = loadDatabaseToStorage(fileFolder, fileName);
+                final CopyFileToStorageResult result = loadFileToStorage(fileFolder, fileName);
 
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
@@ -89,14 +89,14 @@ public class AssetHelper {
      *                          or assets with specified name not found,
      *                          or file was not written to the filesystem
      */
-    private CopyFileToStorageResult loadDatabaseToStorage(String assetFolder, String fileName) throws RuntimeException {
+    private CopyFileToStorageResult loadFileToStorage(String assetFolder, String fileName) throws RuntimeException {
         mOsUtil.clearCache();
 
         if (mOsUtil.isEmpty(fileName)) {
             throw new RuntimeException("The file name is empty");
         }
 
-        if (!mOsUtil.isDatabaseAssetExists(mContext, assetFolder, fileName)) {
+        if (!mOsUtil.isFileAssetExists(mContext, assetFolder, fileName)) {
             throw new RuntimeException("An asset for requested file doesn't exist");
         }
 
@@ -110,17 +110,17 @@ public class AssetHelper {
             throw new RuntimeException("Can't generate destination file path");
         }
 
-        Integer currentDbVersion = mOsUtil.getCurrentDbVersion(mContext, fileName);
-        int assetsDbVersion = mOsUtil.getAssetsDbVersion(mContext, assetFolder, fileName);
+        Integer currentFileVersion = mOsUtil.getCurrentFileVersion(mContext, fileName);
+        int assetsFileVersion = mOsUtil.getAssetsFileVersion(mContext, assetFolder, fileName);
 
-        boolean isVersionAvailable = currentDbVersion == null || assetsDbVersion > currentDbVersion;
+        boolean isVersionAvailable = currentFileVersion == null || assetsFileVersion > currentFileVersion;
         if (isVersionAvailable) {
-            String pathToFile = mOsUtil.loadDatabaseToLocalStorage(mContext, assetFolder, fileName, destinationFilePath);
+            String pathToFile = mOsUtil.loadFileToLocalStorage(mContext, assetFolder, fileName, destinationFilePath);
             if (mOsUtil.isEmpty(pathToFile)) {
                 throw new RuntimeException("Can't find copied file");
             }
-            mOsUtil.storeDatabaseVersion(mContext, assetsDbVersion, fileName);
-            return new CopyFileToStorageResult(pathToFile, currentDbVersion == null ? AssetHelperStatus.INSTALLED : AssetHelperStatus.UPDATED);
+            mOsUtil.storeFileVersion(mContext, assetsFileVersion, fileName);
+            return new CopyFileToStorageResult(pathToFile, currentFileVersion == null ? AssetHelperStatus.INSTALLED : AssetHelperStatus.UPDATED);
         } else {
             //do not update
             return new CopyFileToStorageResult(destinationFilePath, AssetHelperStatus.IGNORED);
