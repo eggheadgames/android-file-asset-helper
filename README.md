@@ -1,8 +1,13 @@
-# Android SQLite RO Asset Helper
+[![Circle CI](https://circleci.com/gh/eggheadgames/android-file-asset-helper.svg?style=svg)](https://circleci.com/gh/eggheadgames/android-file-asset-helper)
+[![Release](https://jitpack.io/v/eggheadgames/android-file-asset-helper.svg)](https://jitpack.io/#eggheadgames/android-file-asset-helper)
+<a target="_blank" href="https://android-arsenal.com/api?level=15"><img src="https://img.shields.io/badge/API-15%2B-orange.svg"></a>
+[![GitHub license](https://img.shields.io/badge/license-MIT-lightgrey.svg)](https://github.com/eggheadgames/android-file-asset-helper/blob/master/LICENSE)
 
-Copy a versioned SQLite database from APK assets ready to use by SQLite in the app as a read-only database.
+# Android File Asset Helper
 
-This library replaces `android-sqlite-asset-helper` for use in one specialised scenario: copying a read-only database.
+Copy a versioned file from APK assets ready to use in the regular read/write user file area of the Android device.
+
+This library replaces `android-sqlite-asset-helper` and `android-realm-asset-helper` for use in the specialized scenario of copying a read-only database. However it could be used for any file that, say, can't be used within the bundle because only streaming access is provided.
 
 E.g. an app might use a catalogue of data that is updated occaisionally. This data is opened read-only on the device and hence can be updated any time simply by copying over a new database.
 
@@ -31,7 +36,7 @@ Add a dependency to your application related `build.gradle`
 
 ```gradle
 dependencies {
-    compile 'com.github.eggheadgames:android-sqlite-ro-asset--helper:2.0.0'
+    compile 'com.github.eggheadgames:android-file-asset-helper:x.x.x'
 }
 ```
 
