@@ -15,15 +15,27 @@ public class AssetFileNameMatcherTest {
     }
 
     @Test
-    public void checkFileNameWithExtension_ShouldReturnCorrectVersions() {
+    public void checkFile_NameWithExtension_ShouldReturnCorrectVersions() {
         int version = osUtil.getAssetsFileVersion("name_2.ext");
         Assert.assertEquals(2, version);
     }
 
     @Test
-    public void checkFileNameWithoutExtension_ShouldReturnCorrectVersions() {
+    public void checkFile_NameWithoutExtension_ShouldReturnCorrectVersions() {
         int version = osUtil.getAssetsFileVersion("name_24");
         Assert.assertEquals(24, version);
+    }
+
+    @Test
+    public void getVersion_OnlyName_ShouldReturn0() {
+        int version = osUtil.getAssetsFileVersion("name");
+        Assert.assertEquals(0, version);
+    }
+
+    @Test
+    public void checkVersion_NameWithExtension_ShouldReturn0() {
+        int version = osUtil.getAssetsFileVersion("name.ex");
+        Assert.assertEquals(0, version);
     }
 
     @Test
@@ -46,6 +58,16 @@ public class AssetFileNameMatcherTest {
 
         String neededAsset = osUtil.findNeededAssetFile(list, "databases", "data", "db");
         Assert.assertEquals("databases" + File.separator + "data_28.db", neededAsset);
+    }
+
+    @Test
+    public void checkFiltration_ShouldReturnFileWithVersionNumberAndLongExtension() {
+        String[] list = new String[2]; // available file on asset
+        list[0] = "f.qwer";
+        list[1] = "volume_2.realmext";
+
+        String neededAsset = osUtil.findNeededAssetFile(list, "data", "volume", "realmext");
+        Assert.assertEquals("data" + File.separator + "volume_2.realmext", neededAsset);
     }
 
     @Test

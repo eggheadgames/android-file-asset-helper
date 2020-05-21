@@ -116,7 +116,8 @@ public class OsUtil {
                     if (extension == null) {
                         matches = file.matches(fileName + VERSION_PATTERN) || file.matches(fileName);
                     } else {
-                        matches = file.matches(fileName + VERSION_PATTERN + "\\." + extension) || file.matches(fileName + "." + extension);
+                        String regex = fileName + VERSION_PATTERN + "[." + extension + "]";
+                        matches = file.matches(regex) || file.matches(fileName + "." + extension);
                     }
 
                     if (matches) {
