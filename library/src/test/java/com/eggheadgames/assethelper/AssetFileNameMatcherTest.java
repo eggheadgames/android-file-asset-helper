@@ -27,36 +27,54 @@ public class AssetFileNameMatcherTest {
     }
 
     @Test
-    public void checkAssetsFilesFiltration_ShouldReturnCorrectFile() {
-        String[] list = new String[4]; // available file on asset
+    public void checkFiltration_ShouldReturnCorrectFile() {
+        String[] list = new String[3]; // available file on asset
         list[0] = "f.qwer";
         list[1] = "f.extension";
         list[2] = "file1.ext1";
-        list[3] = "fileNew";
 
         String neededAsset = osUtil.findNeededAssetFile(list, "folder1", "file1", "ext1");
         Assert.assertEquals("folder1" + File.separator + "file1.ext1", neededAsset);
     }
 
     @Test
-    public void checkAssetsFilesFiltrationWithoutExtension_ShouldReturnCorrectFile() {
-        String[] list = new String[4]; // available file on asset
+    public void checkFiltration_ShouldReturnFileWithVersionNumber() {
+        String[] list = new String[3]; // available file on asset
         list[0] = "f.qwer";
-        list[1] = "f.extension";
-        list[2] = "file1.ext1";
-        list[3] = "fileNew";
+        list[1] = "data_28.db";
+        list[2] = "fileNew";
+
+        String neededAsset = osUtil.findNeededAssetFile(list, "databases", "data", "db");
+        Assert.assertEquals("databases" + File.separator + "data_28.db", neededAsset);
+    }
+
+    @Test
+    public void checkFiltrationWithoutExtension_ShouldReturnCorrectFile() {
+        String[] list = new String[3]; // available file on asset
+        list[0] = "f.qwer";
+        list[1] = "file1.ext1";
+        list[2] = "fileNew";
 
         String neededAsset = osUtil.findNeededAssetFile(list, "folderFolder", "fileNew", null);
         Assert.assertEquals("folderFolder" + File.separator + "fileNew", neededAsset);
     }
 
     @Test
-    public void checkAssetsFilesFiltration_ShouldReturnNull() {
-        String[] list = new String[4]; // available file on asset
+    public void checkFiltrationWithVersionAndWithoutExtension_ShouldReturnCorrectFile() {
+        String[] list = new String[3]; // available file on asset
         list[0] = "f.qwer";
-        list[1] = "f.extension";
-        list[2] = "file";
-        list[3] = "fileNew.qwer";
+        list[1] = "file1.ext1";
+        list[2] = "fileNew_44";
+
+        String neededAsset = osUtil.findNeededAssetFile(list, "folderFolder", "fileNew", null);
+        Assert.assertEquals("folderFolder" + File.separator + "fileNew_44", neededAsset);
+    }
+
+    @Test
+    public void checkFiltration_ShouldReturnNull() {
+        String[] list = new String[2]; // available file on asset
+        list[0] = "f.qwer";
+        list[1] = "file_3";
 
         String neededAsset = osUtil.findNeededAssetFile(list, "folder1", "file2", null);
         Assert.assertNull(neededAsset);

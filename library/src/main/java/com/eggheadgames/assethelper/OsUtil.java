@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 
 public class OsUtil {
 
-    private static final String VERSION_PATTERN = "_\\d+";
+    private static final String VERSION_PATTERN = "_\\d.+";
     private String cachedAssetPath;
 
     public String loadFileToLocalStorage(Context context, String assetFolder, String fileName, String extension, String destinationFilePath) {
@@ -116,7 +116,7 @@ public class OsUtil {
                     if (extension == null) {
                         matches = file.matches(fileName + VERSION_PATTERN) || file.matches(fileName);
                     } else {
-                        matches = file.matches(fileName + VERSION_PATTERN) || file.matches(fileName + "." + extension);
+                        matches = file.matches(fileName + VERSION_PATTERN + "\\." + extension) || file.matches(fileName + "." + extension);
                     }
 
                     if (matches) {
