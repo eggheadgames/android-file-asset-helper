@@ -71,7 +71,7 @@ public class AssetHelperTest {
 
         assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME_WITH_EXTENSION, TestConstants.DESTINATION_FOLDER_PATH);
 
-        verify(osUtil, Mockito.times(1)).storeFileVersion(context, 2, TestConstants.FILE_NAME_WITH_EXTENSION);
+        verify(osUtil, Mockito.times(1)).storeFileVersion(context, 2, TestConstants.FILE_PATH);
     }
 
     @Test
@@ -81,7 +81,7 @@ public class AssetHelperTest {
 
         assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME_WITH_EXTENSION, TestConstants.DESTINATION_FOLDER_PATH);
 
-        verify(osUtil, Mockito.times(1)).storeFileVersion(context, 2, TestConstants.FILE_NAME_WITH_EXTENSION);
+        verify(osUtil, Mockito.times(1)).storeFileVersion(context, 2, TestConstants.FILE_PATH);
     }
 
     @Test
@@ -147,7 +147,7 @@ public class AssetHelperTest {
         when(osUtil.getAssetsFileVersion(any(Context.class), anyString(), anyString(), anyString())).thenReturn(2);
 
         assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME_WITH_EXTENSION, TestConstants.DESTINATION_FOLDER_PATH);
-        verify(osUtil, Mockito.times(1)).storeFileVersion(context, 2, TestConstants.FILE_NAME_WITH_EXTENSION);
+        verify(osUtil, Mockito.times(1)).storeFileVersion(context, 2, TestConstants.FILE_PATH);
     }
 
     @Test(expected = RuntimeException.class)
