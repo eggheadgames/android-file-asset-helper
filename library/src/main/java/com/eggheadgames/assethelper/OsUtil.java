@@ -13,11 +13,11 @@ import java.util.regex.Pattern;
 
 public class OsUtil {
 
-    private static final String VERSION_PATTERN = "_\\d+\\.[^\\n]+";
+    private static final String VERSION_PATTERN = "_\\d+\\.";
     private String cachedAssetPath;
 
-    public String loadDatabaseToLocalStorage(Context context, String assetFolder, String fileName, String destinationFilePath) {
-        String asset = findAsset(context, assetFolder, fileName);
+    public String loadFileToLocalStorage(Context context, String assetFolder, String fileName, String extension, String destinationFilePath) {
+        String assetFilePath = findAsset(context, assetFolder, fileName, extension);
 
         File file = new File(destinationFilePath);
         if (file.exists()) {
@@ -27,7 +27,7 @@ public class OsUtil {
             }
         }
         try {
-            InputStream is = context.getAssets().open(asset);
+            InputStream is = context.getAssets().open(assetFilePath);
             byte[] buffer = new byte[1024];
             FileOutputStream fos = new FileOutputStream(file);
 
@@ -46,18 +46,19 @@ public class OsUtil {
     }
 
     public String generateFilePath(Context context, String fileName, String extension) {
-        return context.getFilesDir() + File.separator + fileName + "." + extension;
+        String suffix = isEmpty(extension) ? "" : ("." + extension);
+        return context.getFilesDir() + File.separator + fileName + suffix;
     }
 
-    public Integer getCurrentDbVersion(Context context, String fileName) {
+    public Integer getCurrentFileVersion(Context context, String fileName) {
         int currentVersion = PreferenceManager.getDefaultSharedPreferences(context).getInt(Constants.PREFERENCES_FILE_VERSION + fileName, -1);
         return currentVersion == -1 ? null : currentVersion;
     }
 
-    public int getAssetsDbVersion(Context context, String assetFolder, String fileName) {
-        String dbAsset = findAsset(context, assetFolder, fileName);
+    public int getAssetsFileVersion(Context context, String assetFolder, String fileName, String extension) {
+        String fileAsset = findAsset(context, assetFolder, fileName, extension);
         Pattern pattern = Pattern.compile(VERSION_PATTERN);
-        Matcher matcher = pattern.matcher(dbAsset);
+        Matcher matcher = pattern.matcher(fileAsset);
 
         if (matcher.find()) {
             String version = matcher.group().substring(1, matcher.group().indexOf('.'));
@@ -66,7 +67,7 @@ public class OsUtil {
         return 0;
     }
 
-    public void storeDatabaseVersion(Context context, int version, String fileName) {
+    public void storeFileVersion(Context context, int version, String fileName) {
         PreferenceManager.getDefaultSharedPreferences(context).edit().putInt(Constants.PREFERENCES_FILE_VERSION + fileName, version).apply();
     }
 
@@ -77,26 +78,15 @@ public class OsUtil {
     /**
      * expected asset name <fileName>_xx.yyy or <fileName>.yyy
      */
-    public boolean isDatabaseAssetExists(Context context, String assetFolder, String fileName) {
-        return !TextUtils.isEmpty(findAsset(context, assetFolder, fileName));
-    }
-
-    public String getAssetFileExtension(Context context, String assetFolder, String fileName) {
-        String assetFilePath = findAsset(context, assetFolder, fileName);
-        if (assetFilePath != null) {
-            int beginIndex = assetFilePath.lastIndexOf(".");
-            if (beginIndex != -1) {
-                return assetFilePath.substring(beginIndex + 1);
-            }
-        }
-        return null;
+    public boolean isFileAssetExists(Context context, String assetFolder, String fileName, String extension) {
+        return !TextUtils.isEmpty(findAsset(context, assetFolder, fileName, extension));
     }
 
     public void clearCache() {
         cachedAssetPath = null;
     }
 
-    private String findAsset(Context context, String path, String fileName) {
+    private String findAsset(Context context, String path, String fileName, String extension) {
         if (!TextUtils.isEmpty(cachedAssetPath)) {
             return cachedAssetPath;
         } else {
@@ -106,9 +96,9 @@ public class OsUtil {
                 if (list.length > 0) {
                     for (String file : list) {
                         if (!TextUtils.isEmpty(file) &&
-                                (file.matches(fileName + VERSION_PATTERN) || file.matches(fileName + "."))) {
+                                (file.matches(fileName + VERSION_PATTERN + extension) || file.matches(fileName + "." + extension))) {
                             cachedAssetPath = path + File.separator + file;
-                            return path;
+                            return cachedAssetPath;
                         }
                     }
                 }

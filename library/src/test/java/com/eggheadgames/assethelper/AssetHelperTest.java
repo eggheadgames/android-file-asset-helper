@@ -12,7 +12,10 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 
@@ -32,126 +35,127 @@ public class AssetHelperTest {
         assetHelper = spy(new AssetHelper());
         assetHelper.mContext = context;
 
-        Mockito.when(osUtil.isEmpty(Mockito.<String>any())).thenAnswer(new Answer<Boolean>() {
+        when(osUtil.isEmpty(Mockito.<String>any())).thenAnswer(new Answer<Boolean>() {
             @Override
             public Boolean answer(InvocationOnMock invocation) throws Throwable {
                 String string = (String) invocation.getArguments()[0];
                 return string == null || string.isEmpty();
             }
         });
-        Mockito.when(osUtil.isDatabaseAssetExists(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString())).thenReturn(true);
+        when(osUtil.isFileAssetExists(any(Context.class), anyString(), anyString(), anyString())).thenReturn(true);
 
-        Mockito.when(osUtil.loadDatabaseToLocalStorage(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString(), Mockito.anyString())).thenReturn(TestConstants.FILE_NAME);
+        when(osUtil.loadFileToLocalStorage(any(Context.class), anyString(),
+                anyString(), anyString(), anyString())).thenReturn(TestConstants.FILE_PATH);
 
-        Mockito.when(osUtil.generateFilePath(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString())).thenReturn(TestConstants.FILE_PATH);
-
-        Mockito.when(osUtil.getAssetFileExtension(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString())).thenReturn(TestConstants.FILE_EXTENSION);
+        when(osUtil.generateFilePath(any(Context.class), anyString(), Mockito.<String>any())).thenReturn(TestConstants.FILE_PATH);
 
         assetHelper.mOsUtil = osUtil;
     }
 
     @Test(expected = RuntimeException.class)
-    public void onEmptyDatabaseName_shouldThrowRuntimeException() throws RuntimeException {
+    public void onEmptyFileName_shouldThrowRuntimeException() throws RuntimeException {
         assetHelper.copyIfNew(null, null);
     }
 
     @Test(expected = RuntimeException.class)
-    public void onMissingDbAsset_shouldThrowRuntimeException() throws RuntimeException {
-        Mockito.when(osUtil.isDatabaseAssetExists(context, TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME)).thenReturn(false);
+    public void onMissingFileAsset_shouldThrowRuntimeException() throws RuntimeException {
+        when(osUtil.isFileAssetExists(context, TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME, TestConstants.FILE_EXTENSION)).thenReturn(false);
 
-        assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME);
+        assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME_WITH_EXTENSION);
     }
 
     @Test
     public void onFreshInstall_fileVersionShouldBeStored() {
-        Mockito.when(osUtil.getCurrentDbVersion(Mockito.any(Context.class), Mockito.anyString())).thenReturn(null);
-        Mockito.when(osUtil.getAssetsDbVersion(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString())).thenReturn(2);
+        when(osUtil.getCurrentFileVersion(any(Context.class), anyString())).thenReturn(null);
+        when(osUtil.getAssetsFileVersion(any(Context.class), anyString(), anyString(), anyString())).thenReturn(2);
 
-        assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME);
+        assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME_WITH_EXTENSION);
 
-        Mockito.verify(osUtil, Mockito.times(1)).storeDatabaseVersion(context, 2, TestConstants.FILE_NAME);
+        verify(osUtil, Mockito.times(1)).storeFileVersion(context, 2, TestConstants.FILE_NAME_WITH_EXTENSION);
     }
 
     @Test
-    public void onDatabaseUpdate_fileVersionShouldBeStored() {
-        Mockito.when(osUtil.getCurrentDbVersion(Mockito.any(Context.class), Mockito.anyString())).thenReturn(1);
-        Mockito.when(osUtil.getAssetsDbVersion(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString())).thenReturn(2);
+    public void onFileUpdate_fileVersionShouldBeStored() {
+        when(osUtil.getCurrentFileVersion(any(Context.class), anyString())).thenReturn(1);
+        when(osUtil.getAssetsFileVersion(any(Context.class), anyString(), anyString(), anyString())).thenReturn(2);
 
-        assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME);
+        assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME_WITH_EXTENSION);
 
-        Mockito.verify(osUtil, Mockito.times(1)).storeDatabaseVersion(context, 2, TestConstants.FILE_NAME);
+        verify(osUtil, Mockito.times(1)).storeFileVersion(context, 2, TestConstants.FILE_NAME_WITH_EXTENSION);
     }
 
     @Test
     public void onFreshAppInstall_fileShouldBeLoadedToInternalStorage() {
-        Mockito.when(osUtil.getCurrentDbVersion(Mockito.any(Context.class), Mockito.anyString())).thenReturn(null);
+        when(osUtil.getCurrentFileVersion(any(Context.class), anyString())).thenReturn(null);
 
-        assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME);
+        assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME_WITH_EXTENSION);
 
-        Mockito.verify(osUtil, Mockito.times(1)).loadDatabaseToLocalStorage(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+        verify(osUtil, Mockito.times(1))
+                .loadFileToLocalStorage(any(Context.class), anyString(), anyString(), anyString(), anyString());
     }
 
     @Test
-    public void onDatabaseUpdate_fileShouldBeLoadedToInternalStorage() {
-        Mockito.when(osUtil.getCurrentDbVersion(Mockito.any(Context.class), Mockito.anyString())).thenReturn(1);
-        Mockito.when(osUtil.getAssetsDbVersion(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString())).thenReturn(2);
+    public void onFileUpdate_fileShouldBeLoadedToInternalStorage() {
+        when(osUtil.getCurrentFileVersion(any(Context.class), anyString())).thenReturn(1);
+        when(osUtil.getAssetsFileVersion(any(Context.class), anyString(), anyString(), anyString())).thenReturn(2);
 
-        assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME);
+        assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME_WITH_EXTENSION);
 
-        Mockito.verify(osUtil, Mockito.times(1)).loadDatabaseToLocalStorage(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+        verify(osUtil, Mockito.times(1))
+                .loadFileToLocalStorage(any(Context.class), anyString(), anyString(), anyString(), anyString());
     }
 
     @Test
-    public void onSameDatabaseVersionArrived_fileShouldNotBeLoadedToInternalStorage() {
-        Mockito.when(osUtil.getCurrentDbVersion(Mockito.any(Context.class), Mockito.anyString())).thenReturn(2);
-        Mockito.when(osUtil.getAssetsDbVersion(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString())).thenReturn(2);
+    public void onSameFileVersionArrived_fileShouldNotBeLoadedToInternalStorage() {
+        when(osUtil.getCurrentFileVersion(any(Context.class), anyString())).thenReturn(2);
+        when(osUtil.getAssetsFileVersion(any(Context.class), anyString(), anyString(), anyString())).thenReturn(2);
 
-        assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME);
-        Mockito.verify(osUtil, Mockito.never()).loadDatabaseToLocalStorage(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+        assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME_WITH_EXTENSION);
+        verify(osUtil, Mockito.never())
+                .loadFileToLocalStorage(any(Context.class), anyString(), anyString(), anyString(), anyString());
     }
 
     @Test
     public void onFreshAppInstall_relevantCallbackShouldBeTriggered() {
-        Mockito.when(osUtil.getCurrentDbVersion(Mockito.any(Context.class), Mockito.anyString())).thenReturn(null);
+        when(osUtil.getCurrentFileVersion(any(Context.class), anyString())).thenReturn(null);
 
-        CopyFileToStorageResult result = assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME);
+        CopyFileToStorageResult result = assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME_WITH_EXTENSION);
         Assert.assertEquals(AssetHelperStatus.INSTALLED, result.getStatus());
     }
 
     @Test
-    public void onDatabaseUpdate_relevantCallbackShouldBeTriggered() {
-        Mockito.when(osUtil.getCurrentDbVersion(Mockito.any(Context.class), Mockito.anyString())).thenReturn(1);
-        Mockito.when(osUtil.getAssetsDbVersion(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString())).thenReturn(2);
+    public void onFileUpdate_relevantCallbackShouldBeTriggered() {
+        when(osUtil.getCurrentFileVersion(any(Context.class), anyString())).thenReturn(1);
+        when(osUtil.getAssetsFileVersion(any(Context.class), anyString(), anyString(), anyString())).thenReturn(2);
 
-        CopyFileToStorageResult result = assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME);
+        CopyFileToStorageResult result = assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME_WITH_EXTENSION);
         Assert.assertEquals(AssetHelperStatus.UPDATED, result.getStatus());
     }
 
     @Test
-    public void onSameDatabaseVersionArrived_relevantCallbackShouldBeTriggered() {
-        Mockito.when(osUtil.getCurrentDbVersion(Mockito.any(Context.class), Mockito.anyString())).thenReturn(2);
-        Mockito.when(osUtil.getAssetsDbVersion(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString())).thenReturn(2);
+    public void onSameFileVersionArrived_relevantCallbackShouldBeTriggered() {
+        when(osUtil.getCurrentFileVersion(any(Context.class), anyString())).thenReturn(2);
+        when(osUtil.getAssetsFileVersion(any(Context.class), anyString(), anyString(), anyString())).thenReturn(2);
 
-        CopyFileToStorageResult result = assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME);
+        CopyFileToStorageResult result = assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME_WITH_EXTENSION);
         Assert.assertEquals(AssetHelperStatus.IGNORED, result.getStatus());
     }
 
     @Test
-    public void onDatabaseUpdate_versionShouldBeSetForCorrectDatabase() {
+    public void onFileUpdate_versionShouldBeSetForCorrectFile() {
+        when(osUtil.getCurrentFileVersion(any(Context.class), anyString())).thenReturn(1);
+        when(osUtil.getAssetsFileVersion(any(Context.class), anyString(), anyString(), anyString())).thenReturn(2);
 
-        Mockito.when(osUtil.getCurrentDbVersion(Mockito.any(Context.class), Mockito.anyString())).thenReturn(1);
-        Mockito.when(osUtil.getAssetsDbVersion(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString())).thenReturn(2);
-
-        assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME);
-        Mockito.verify(osUtil, Mockito.times(1)).storeDatabaseVersion(context, 2, TestConstants.FILE_NAME);
+        assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME_WITH_EXTENSION);
+        verify(osUtil, Mockito.times(1)).storeFileVersion(context, 2, TestConstants.FILE_NAME_WITH_EXTENSION);
     }
 
     @Test(expected = RuntimeException.class)
-    public void onLoadDatabaseToStorageFileNotFound_exceptionShouldBeThrown() {
-        Mockito.when(osUtil.getCurrentDbVersion(Mockito.any(Context.class), Mockito.anyString())).thenReturn(1);
-        Mockito.when(osUtil.getAssetsDbVersion(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString())).thenReturn(2);
+    public void onLoadFileToStorageFileNotFound_exceptionShouldBeThrown() {
+        when(osUtil.getCurrentFileVersion(any(Context.class), anyString())).thenReturn(1);
+        when(osUtil.getAssetsFileVersion(any(Context.class), anyString(), anyString(), anyString())).thenReturn(2);
 
-        when(osUtil.loadDatabaseToLocalStorage(Mockito.any(Context.class), Mockito.anyString(), Mockito.anyString(), Mockito.anyString())).thenReturn(null);
-        assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME);
+        when(osUtil.loadFileToLocalStorage(any(Context.class), anyString(), anyString(), anyString(), anyString())).thenReturn(null);
+        assetHelper.copyIfNew(TestConstants.ASSET_FOLDER, TestConstants.FILE_NAME_WITH_EXTENSION);
     }
 }

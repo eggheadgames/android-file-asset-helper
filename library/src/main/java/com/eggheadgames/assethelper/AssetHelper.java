@@ -29,16 +29,16 @@ public class AssetHelper {
      * This method does process in the UI thread. Try to call it from the background thread or use {@link #copyFileToStorageAsync}
      *
      * @param assetFolder name of folder where file is located
-     * @param fileName    a file name without version and file extension.
+     * @param fileName    a file name with version and file extension.
      *                    e.g. if you have an asset file data/testdatabase_15.sqlite
-     *                    then you should specify testdatabase as a fileName
+     *                    then you should specify testdatabase.sqlite as a fileName
      * @return LoadFileToStorageResult
      * @throws RuntimeException in case if specified fileName is empty,
      *                          or assets with specified name not found,
      *                          or file was not written to the filesystem
      */
     public CopyFileToStorageResult copyIfNew(String assetFolder, String fileName) throws RuntimeException {
-        return loadDatabaseToStorage(assetFolder, fileName);
+        return loadFileToStorage(assetFolder, fileName);
     }
 
     /**
@@ -48,9 +48,9 @@ public class AssetHelper {
      * P.S. The file will be stored by the following path:
      * context.getFilesDir() + File.separator + fileName + ".yyy"
      *
-     * @param fileName   a file name without version and file extension.
+     * @param fileName   a file name with version and file extension.
      *                   e.g. if you have an asset file data/testdatabase_15.sqlite
-     *                   then you should specify testdatabase as a fileName
+     *                   then you should specify testdatabase.sqlite as a fileName
      * @param fileFolder name of folder where file is located
      * @param listener   will notify about the status
      * @throws RuntimeException in case if specified fileName is empty,
@@ -62,7 +62,7 @@ public class AssetHelper {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                final CopyFileToStorageResult result = loadDatabaseToStorage(fileFolder, fileName);
+                final CopyFileToStorageResult result = loadFileToStorage(fileFolder, fileName);
 
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
@@ -81,28 +81,33 @@ public class AssetHelper {
      * P.S. The file will be stored by the following path:
      * context.getFilesDir() + File.separator + fileName + ".yyy"
      *
-     * @param fileName    a file name without version and file extension.
+     * @param fileName    a file name with version and file extension.
      *                    e.g. if you have an asset file data/testdatabase_15.sqlite
-     *                    then you should specify testdatabase as a fileName
+     *                    then you should specify testdatabase.sqlite as a fileName
      * @param assetFolder name of folder where file is located
      * @throws RuntimeException in case if specified fileName is empty,
      *                          or assets with specified name not found,
      *                          or file was not written to the filesystem
      */
-    private CopyFileToStorageResult loadDatabaseToStorage(String assetFolder, String fileName) throws RuntimeException {
+    private CopyFileToStorageResult loadFileToStorage(String assetFolder, String fileName) throws RuntimeException {
         mOsUtil.clearCache();
 
         if (mOsUtil.isEmpty(fileName)) {
             throw new RuntimeException("The file name is empty");
         }
 
-        if (!mOsUtil.isDatabaseAssetExists(mContext, assetFolder, fileName)) {
-            throw new RuntimeException("An asset for requested file doesn't exist");
+        String name;
+        String extension = null;
+        int indexOfDot = fileName.lastIndexOf(".");
+        if (indexOfDot == -1) {
+            name = fileName;
+        } else {
+            name = fileName.substring(0, indexOfDot);
+            extension = fileName.substring(indexOfDot + 1);
         }
 
-        String extension = mOsUtil.getAssetFileExtension(mContext, assetFolder, fileName);
-        if (mOsUtil.isEmpty(extension)) {
-            throw new RuntimeException("Extension for the " + fileName + " is empty");
+        if (!mOsUtil.isFileAssetExists(mContext, assetFolder, name, extension)) {
+            throw new RuntimeException("An asset for requested file doesn't exist");
         }
 
         String destinationFilePath = mOsUtil.generateFilePath(mContext, fileName, extension);
@@ -110,17 +115,17 @@ public class AssetHelper {
             throw new RuntimeException("Can't generate destination file path");
         }
 
-        Integer currentDbVersion = mOsUtil.getCurrentDbVersion(mContext, fileName);
-        int assetsDbVersion = mOsUtil.getAssetsDbVersion(mContext, assetFolder, fileName);
+        Integer currentFileVersion = mOsUtil.getCurrentFileVersion(mContext, fileName);
+        int assetsFileVersion = mOsUtil.getAssetsFileVersion(mContext, assetFolder, fileName, extension);
 
-        boolean isVersionAvailable = currentDbVersion == null || assetsDbVersion > currentDbVersion;
+        boolean isVersionAvailable = currentFileVersion == null || assetsFileVersion > currentFileVersion;
         if (isVersionAvailable) {
-            String pathToFile = mOsUtil.loadDatabaseToLocalStorage(mContext, assetFolder, fileName, destinationFilePath);
+            String pathToFile = mOsUtil.loadFileToLocalStorage(mContext, assetFolder, fileName, extension, destinationFilePath);
             if (mOsUtil.isEmpty(pathToFile)) {
                 throw new RuntimeException("Can't find copied file");
             }
-            mOsUtil.storeDatabaseVersion(mContext, assetsDbVersion, fileName);
-            return new CopyFileToStorageResult(pathToFile, currentDbVersion == null ? AssetHelperStatus.INSTALLED : AssetHelperStatus.UPDATED);
+            mOsUtil.storeFileVersion(mContext, assetsFileVersion, fileName);
+            return new CopyFileToStorageResult(pathToFile, currentFileVersion == null ? AssetHelperStatus.INSTALLED : AssetHelperStatus.UPDATED);
         } else {
             //do not update
             return new CopyFileToStorageResult(destinationFilePath, AssetHelperStatus.IGNORED);
