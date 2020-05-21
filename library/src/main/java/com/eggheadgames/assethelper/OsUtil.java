@@ -68,7 +68,8 @@ public class OsUtil {
     }
 
     public void storeFileVersion(Context context, int version, String fileName) {
-        PreferenceManager.getDefaultSharedPreferences(context).edit().putInt(Constants.PREFERENCES_FILE_VERSION + fileName, version).apply();
+        PreferenceManager.getDefaultSharedPreferences(context)
+                .edit().putInt(Constants.PREFERENCES_FILE_VERSION + fileName, version).apply();
     }
 
     public boolean isEmpty(String string) {

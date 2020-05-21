@@ -120,7 +120,7 @@ public class AssetHelper {
             if (mOsUtil.isEmpty(pathToFile)) {
                 throw new RuntimeException("Can't find copied file");
             }
-            mOsUtil.storeFileVersion(mContext, assetsFileVersion, fileName);
+            mOsUtil.storeFileVersion(mContext, assetsFileVersion, destinationFilePath);
             return new CopyFileToStorageResult(pathToFile, currentFileVersion == null ? AssetHelperStatus.INSTALLED : AssetHelperStatus.UPDATED);
         } else {
             //do not update
