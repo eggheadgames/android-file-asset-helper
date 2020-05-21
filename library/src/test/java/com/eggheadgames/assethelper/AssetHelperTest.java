@@ -47,7 +47,7 @@ public class AssetHelperTest {
         when(osUtil.loadFileToLocalStorage(any(Context.class), anyString(),
                 anyString(), anyString(), anyString())).thenReturn(TestConstants.FILE_PATH);
 
-        when(osUtil.generateFilePath(anyString(), anyString(), Mockito.<String>any())).thenReturn(TestConstants.FILE_PATH);
+        when(osUtil.generateFilePath(anyString(), anyString())).thenReturn(TestConstants.FILE_PATH);
 
         assetHelper.mOsUtil = osUtil;
     }

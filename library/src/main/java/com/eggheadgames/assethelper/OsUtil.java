@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 
 public class OsUtil {
 
-    private static final String VERSION_PATTERN = "_\\d+\\.";
+    private static final String VERSION_PATTERN = "_\\d+";
     private String cachedAssetPath;
 
     public String loadFileToLocalStorage(Context context, String assetFolder, String fileName, String extension, String destinationFilePath) {
@@ -45,31 +45,40 @@ public class OsUtil {
         return destinationFilePath;
     }
 
-    public String generateFilePath(String destinationFolder, String fileName, String extension) {
-        String suffix = isEmpty(extension) ? "" : ("." + extension);
-        return destinationFolder + File.separator + fileName + suffix;
+    public String generateFilePath(String destinationFolder, String fileName) {
+        return destinationFolder + File.separator + fileName;
     }
 
-    public Integer getCurrentFileVersion(Context context, String fileName) {
-        int currentVersion = PreferenceManager.getDefaultSharedPreferences(context).getInt(Constants.PREFERENCES_FILE_VERSION + fileName, -1);
+    public Integer getCurrentFileVersion(Context context, String fullPathToFile) {
+        int currentVersion = PreferenceManager.getDefaultSharedPreferences(context).getInt(Constants.PREFERENCES_FILE_VERSION + fullPathToFile, -1);
         return currentVersion == -1 ? null : currentVersion;
     }
 
     public int getAssetsFileVersion(Context context, String assetFolder, String fileName, String extension) {
         String fileAsset = findAsset(context, assetFolder, fileName, extension);
+        return getAssetsFileVersion(fileAsset);
+    }
+
+    public int getAssetsFileVersion(String fileName) {
         Pattern pattern = Pattern.compile(VERSION_PATTERN);
-        Matcher matcher = pattern.matcher(fileAsset);
+        Matcher matcher = pattern.matcher(fileName);
 
         if (matcher.find()) {
-            String version = matcher.group().substring(1, matcher.group().indexOf('.'));
+            String group = matcher.group();
+
+            int endIndex = group.indexOf('.');
+            if (endIndex < 0) {
+                endIndex = group.length();
+            }
+            String version = group.substring(1, endIndex);
             return Integer.parseInt(version);
         }
         return 0;
     }
 
-    public void storeFileVersion(Context context, int version, String fileName) {
+    public void storeFileVersion(Context context, int version, String fullPathToFile) {
         PreferenceManager.getDefaultSharedPreferences(context)
-                .edit().putInt(Constants.PREFERENCES_FILE_VERSION + fileName, version).apply();
+                .edit().putInt(Constants.PREFERENCES_FILE_VERSION + fullPathToFile, version).apply();
     }
 
     public boolean isEmpty(String string) {
@@ -88,25 +97,34 @@ public class OsUtil {
     }
 
     private String findAsset(Context context, String path, String fileName, String extension) {
-        if (!TextUtils.isEmpty(cachedAssetPath)) {
-            return cachedAssetPath;
-        } else {
+        if (TextUtils.isEmpty(cachedAssetPath)) {
             try {
-                String[] list;
-                list = context.getAssets().list(path);
-                if (list.length > 0) {
-                    for (String file : list) {
-                        if (!TextUtils.isEmpty(file) &&
-                                (file.matches(fileName + VERSION_PATTERN + extension) || file.matches(fileName + "." + extension))) {
-                            cachedAssetPath = path + File.separator + file;
-                            return cachedAssetPath;
-                        }
+                String[] list = context.getAssets().list(path);
+                cachedAssetPath = findNeededAssetFile(list, path, fileName, extension);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return cachedAssetPath;
+    }
+
+    protected String findNeededAssetFile(String[] list, String path, String fileName, String extension) {
+        if (list != null && list.length > 0) {
+            for (String file : list) {
+                if (file != null && file.length() > 0) {
+                    boolean matches;
+                    if (extension == null) {
+                        matches = file.matches(fileName + VERSION_PATTERN) || file.matches(fileName);
+                    } else {
+                        matches = file.matches(fileName + VERSION_PATTERN) || file.matches(fileName + "." + extension);
+                    }
+
+                    if (matches) {
+                        return path + File.separator + file;
                     }
                 }
-            } catch (IOException e) {
-                return null;
             }
-            return null;
         }
+        return null;
     }
 }

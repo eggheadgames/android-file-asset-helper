@@ -106,17 +106,17 @@ public class AssetHelper {
             throw new RuntimeException("An asset for requested file doesn't exist");
         }
 
-        String destinationFilePath = mOsUtil.generateFilePath(destinationFolder, fileName, extension);
+        String destinationFilePath = mOsUtil.generateFilePath(destinationFolder, fileName);
         if (mOsUtil.isEmpty(destinationFilePath)) {
             throw new RuntimeException("Can't generate destination file path");
         }
 
-        Integer currentFileVersion = mOsUtil.getCurrentFileVersion(mContext, fileName);
-        int assetsFileVersion = mOsUtil.getAssetsFileVersion(mContext, assetFolder, fileName, extension);
+        Integer currentFileVersion = mOsUtil.getCurrentFileVersion(mContext, destinationFilePath);
+        int assetsFileVersion = mOsUtil.getAssetsFileVersion(mContext, assetFolder, name, extension);
 
         boolean isVersionAvailable = currentFileVersion == null || assetsFileVersion > currentFileVersion;
         if (isVersionAvailable) {
-            String pathToFile = mOsUtil.loadFileToLocalStorage(mContext, assetFolder, fileName, extension, destinationFilePath);
+            String pathToFile = mOsUtil.loadFileToLocalStorage(mContext, assetFolder, name, extension, destinationFilePath);
             if (mOsUtil.isEmpty(pathToFile)) {
                 throw new RuntimeException("Can't find copied file");
             }
