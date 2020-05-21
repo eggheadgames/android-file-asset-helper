@@ -45,9 +45,9 @@ public class OsUtil {
         return destinationFilePath;
     }
 
-    public String generateFilePath(Context context, String fileName, String extension) {
+    public String generateFilePath(String destinationFolder, String fileName, String extension) {
         String suffix = isEmpty(extension) ? "" : ("." + extension);
-        return context.getFilesDir() + File.separator + fileName + suffix;
+        return destinationFolder + File.separator + fileName + suffix;
     }
 
     public Integer getCurrentFileVersion(Context context, String fileName) {
