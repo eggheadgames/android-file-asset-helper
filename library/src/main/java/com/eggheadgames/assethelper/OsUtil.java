@@ -46,6 +46,14 @@ public class OsUtil {
     }
 
     public String generateFilePath(String destinationFolder, String fileName) {
+        File folder = new File(destinationFolder);
+        if (!folder.exists()) {
+            boolean created = folder.mkdirs();
+            if (!created) {
+                throw new RuntimeException("Can not create folder. Path: " + destinationFolder);
+            }
+        }
+
         return destinationFolder + File.separator + fileName;
     }
 
